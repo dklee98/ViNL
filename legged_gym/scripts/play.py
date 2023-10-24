@@ -165,7 +165,8 @@ def play(args):
             filename = os.path.join(
                 # LEGGED_GYM_ROOT_DIR,
                 # "/home/simar/Projects/isaacVL/localDev/legged_gym",
-                "/home/naoki/gt/vl/legged_gym",
+                # "/home/naoki/gt/vl/legged_gym",
+                "/home/dklee98/git/ai707_ws/ViNL",
                 "logs",
                 train_cfg.runner.experiment_name,
                 "exported",
@@ -214,7 +215,7 @@ def play(args):
 
 if __name__ == "__main__":
     EXPORT_POLICY = False
-    RECORD_FRAMES = True
+    RECORD_FRAMES = False
     MOVE_CAMERA = False
     args = get_args()
     play(args)
