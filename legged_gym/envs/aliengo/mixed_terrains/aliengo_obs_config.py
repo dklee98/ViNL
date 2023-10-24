@@ -145,5 +145,7 @@ class AliengoObsCfgPPO(LeggedRobotCfgPPO):
         num_test_envs=1
 
         resume = True
-        resume_path = "weights/rough.pt" # if you want to train
+        # resume_path = "logs/rough_aliengo/Oct04_22-22-01_RoughTerrainDMEnc/model_4200_14.453762291669845.pt" # for training
+        resume_path = "logs/obs_aliengo/Oct05_13-05-54_ObsEncDM/model_1000_18.893275952339174.pt" # for eval
+        # resume_path = "weights/rough.pt" # if you want to train
         # resume_path = "weights/obs.pt" #if you want to eval

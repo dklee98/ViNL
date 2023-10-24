@@ -121,7 +121,7 @@ class Aliengo(AlienGoCameraMixin, LeggedRobot):
                 self.camera_handles.append(cam1)
 
                 body_handle = self.gym.find_actor_rigid_body_handle(
-                    self.envs[env_idx], self.actor_handles[env_idx], "base"
+                    self.envs[i], self.actor_handles[i], "base"
                 )
 
                 self.gym.attach_camera_to_body(

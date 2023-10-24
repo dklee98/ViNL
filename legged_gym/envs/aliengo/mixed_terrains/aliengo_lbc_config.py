@@ -149,9 +149,9 @@ class AliengoLbcCfgPPO(LeggedRobotCfgPPO):
 
         resume = True #True for eval, false for train
 
-        resume_path = "weights/lbc.pt"
+        resume_path = "logs/lbc_aliengo/Oct12_21-37-30_debug/model_10000_17.82413353085518.pt"
 
-        teacher_policy = "weights/obs.pt"
+        teacher_policy = "logs/obs_aliengo/Oct05_13-05-54_ObsEncDM/model_1000_18.893275952339174.pt"
 
     class lbc(LeggedRobotCfgPPO.lbc):
         batch_size = 10
