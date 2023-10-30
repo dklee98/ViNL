@@ -48,7 +48,7 @@ class AliengoLbcCfg(LeggedRobotCfg):
         num_actions = 12
         num_observations = 235
         num_proprio_obs = 48
-        save_im = True
+        save_im = False
         # camera_res = [1280, 720]
         # camera_res = [640, 360]
         camera_res = [320, 180]
