@@ -147,11 +147,11 @@ class AliengoLbcCfgPPO(LeggedRobotCfgPPO):
         max_iterations = 10000  # number of policy updates
         num_test_envs = 1
 
-        resume = True #True for eval, false for train
+        resume = False #True for eval, false for train
 
         resume_path = "logs/lbc_aliengo/Oct12_21-37-30_debug/model_10000_17.82413353085518.pt"
 
-        teacher_policy = "logs/obs_aliengo/Oct05_13-05-54_ObsEncDM/model_1000_18.893275952339174.pt"
+        teacher_policy = "logs/obs_aliengo/Nov27_12-37-31_ObsEncDM/model_10500_17.82906129360199.pt"
 
     class lbc(LeggedRobotCfgPPO.lbc):
         batch_size = 10

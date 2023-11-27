@@ -72,6 +72,8 @@ class Terrain:
             np.sum(cfg.terrain_proportions[: i + 1])
             for i in range(len(cfg.terrain_proportions))
         ]
+        self.custom_env_id = 100000
+        print("PROPORTIONS: ", self.proportions)
 
         self.cfg.num_sub_terrains = cfg.num_rows * cfg.num_cols
         self.env_origins = np.zeros((cfg.num_rows, cfg.num_cols, 3))
@@ -281,8 +283,11 @@ class Terrain:
                 num_rectangles,
                 platform_size=3.0,
             )
-        elif choice < self.proportions[5]:
+        elif choice < self.proportions[5]:  ## custom
             # print("MAKING TERRAIN HERE")
+            self.custom_env_id = min(self.custom_env_id, int((choice - 0.001) * self.cfg.num_cols))
+            # print(f"j: {(choice - 0.001) * self.cfg.num_cols}")
+            print(f"self.custom_env_id: {self.custom_env_id}")
             num_rectangles = int(200 * difficulty)
             # num_rectangles = 0
             rectangle_min_size = 2 * obs_scale

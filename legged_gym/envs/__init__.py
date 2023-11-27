@@ -46,6 +46,8 @@ from .aliengo.flat.aliengo_flat_config import AliengoFlatCfg, AliengoFlatCfgPPO
 from .aliengo.mixed_terrains.aliengo_obs_config import AliengoObsCfg, AliengoObsCfgPPO
 from .aliengo.mixed_terrains.aliengo_lbc_config import AliengoLbcCfg, AliengoLbcCfgPPO
 
+from .aliengo.mixed_terrains.aliengo_corp_config import AliengoCorpCfg, AliengoCorpCfgPPO
+
 
 from .anymal_c.mixed_terrains.anymal_c_rough_config import (
     AnymalCRoughCfg,
@@ -73,6 +75,8 @@ task_registry.register(
 )
 task_registry.register("aliengo_obs", Aliengo, AliengoObsCfg(), AliengoObsCfgPPO())
 task_registry.register("aliengo_lbc", Aliengo, AliengoLbcCfg(), AliengoLbcCfgPPO())
+
+task_registry.register("aliengo_corp", Aliengo, AliengoCorpCfg(), AliengoCorpCfgPPO())
 
 task_registry.register("aliengo_nav", AliengoNav, AliengoNavCfg(), AliengoNavCfgAlg())
 

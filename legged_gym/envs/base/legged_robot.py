@@ -249,6 +249,8 @@ class LeggedRobot(BaseTask):
             self.common_step_counter % self.max_episode_length == 0
         ):
             self.update_command_curriculum(env_ids)
+        if self.cfg.rewards.curriculum:
+            self.update_reward_curriculum(env_ids)
 
         # reset robot states
         self._reset_dofs(env_ids)
@@ -287,6 +289,7 @@ class LeggedRobot(BaseTask):
         Calls each reward function which had a non-zero scale (processed in self._prepare_reward_function())
         adds each terms to the episode sums and to the total reward
         """
+        # print(f"feet_step_scale: {self.reward_scales['feet_step']}, feet_stumble_scale: {self.reward_scales['feet_stumble']}")
         self.rew_buf[:] = 0.0
         for i in range(len(self.reward_functions)):
             name = self.reward_names[i]
@@ -715,9 +718,26 @@ class LeggedRobot(BaseTask):
             torch.randint_like(self.terrain_levels[env_ids], self.max_terrain_level),
             torch.clip(self.terrain_levels[env_ids], 0),
         )  # (the minumum level is zero)
-        self.env_origins[env_ids] = self.terrain_origins[
-            self.terrain_levels[env_ids], self.terrain_types[env_ids]
-        ]
+
+        if self.cfg.terrain.final_boss_custom:
+            if torch.sum(self.final_env_ids[env_ids]) > 0:
+                self.env_origins[env_ids] = self.terrain_origins[
+                    self.terrain_levels[env_ids], self.custom_terrain_types[env_ids]
+                ]
+            elif (torch.mean(self.terrain_levels[env_ids], dtype=torch.float) > 0.8 * self.cfg.terrain.num_rows) and (torch.mean(self.episode_sums["tracking_lin_vel"][env_ids]) / self.max_episode_length > 0.8 * self.reward_scales["tracking_lin_vel"]):
+                self.env_origins[env_ids] = self.terrain_origins[
+                    self.terrain_levels[env_ids], self.custom_terrain_types[env_ids]
+                ]
+                self.final_env_ids[env_ids] = True
+                print(f"new final env ids: {self.final_env_ids[env_ids]}")
+            else:
+                self.env_origins[env_ids] = self.terrain_origins[
+                    self.terrain_levels[env_ids], self.terrain_types[env_ids]
+                ]
+        else:
+            self.env_origins[env_ids] = self.terrain_origins[
+                self.terrain_levels[env_ids], self.terrain_types[env_ids]
+            ]
 
     def update_command_curriculum(self, env_ids):
         """Implements a curriculum of increasing commands
@@ -741,6 +761,23 @@ class LeggedRobot(BaseTask):
                 0.0,
                 self.cfg.commands.max_curriculum,
             )
+   
+    def update_reward_curriculum(self, env_ids):
+        """Implements a curriculum of feet_step & feet_stumble rewards
+
+        Args:
+            env_ids (List[int]): ids of environments being reset
+        """
+        # print(f"mean of terrain level: {torch.mean(self.terrain_levels[env_ids], dtype=torch.float)}")
+        # print(f"current reward scale: {self.reward_scales['feet_step']}, {self.reward_scales['feet_stumble']}, {self.dt}") # 0.02
+
+        if (torch.mean(self.terrain_levels[env_ids], dtype=torch.float) > 0.8 * self.cfg.terrain.num_rows):  # if terrain level is above 5
+            if (torch.mean(self.episode_sums["tracking_lin_vel"][env_ids]) / self.max_episode_length > 0.8 * self.reward_scales["tracking_lin_vel"]):
+                self.reward_feet_step_scale = np.clip(self.reward_feet_step_scale - 0.05, self.reward_feet_step_scale_min, 0.0)
+                self.reward_feet_stumble_scale = np.clip(self.reward_feet_stumble_scale - 0.05, self.reward_feet_stumble_scale_min, 0.0)
+                self.reward_scales["feet_step"] = self.reward_feet_step_scale * self.dt
+                self.reward_scales["feet_stumble"] = self.reward_feet_stumble_scale * self.dt
+                print(f"terrain level: {torch.mean(self.terrain_levels[env_ids], dtype=torch.float)}, tracking reward: {torch.mean(self.episode_sums['tracking_lin_vel'][env_ids]) / self.max_episode_length}, feet_step: {self.reward_scales['feet_step']}")
 
     def _get_noise_scale_vec(self, cfg):
         """Sets a vector used to scale the noise added to the observations.
@@ -903,6 +940,12 @@ class LeggedRobot(BaseTask):
                 self.reward_scales.pop(key)
             else:
                 self.reward_scales[key] *= self.dt
+        
+        if self.cfg.rewards.curriculum:       
+            self.reward_scales["feet_step"] = self.reward_feet_step_scale * self.dt
+            self.reward_scales["feet_stumble"] = self.reward_feet_stumble_scale * self.dt
+            print(f"feet_step_scale: {self.reward_scales['feet_step']}, feet_stumble_scale: {self.reward_scales['feet_stumble']}")
+
         # prepare list of functions
         self.reward_functions = []
         self.reward_names = []
@@ -1171,17 +1214,38 @@ class LeggedRobot(BaseTask):
             self.terrain_levels = torch.randint(
                 0, max_init_level + 1, (self.num_envs,), device=self.device
             )
-            self.terrain_types = torch.div(
-                torch.arange(self.num_envs, device=self.device),
-                (self.num_envs / self.cfg.terrain.num_cols),
-                rounding_mode="floor",
-            ).to(torch.long)
-            self.max_terrain_level = self.cfg.terrain.num_rows
+            if self.cfg.terrain.final_boss_custom:
+                self.final_env_ids = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device, requires_grad=False)
+                tmp_num_cols = self.terrain.custom_env_id # 16
+                if tmp_num_cols == 0:
+                    tmp_num_cols = self.cfg.terrain.num_cols
+                self.terrain_types = torch.div(
+                    torch.arange(self.num_envs, device=self.device),    # 0, 1, 2, ..., 1023
+                    (self.num_envs / tmp_num_cols),    # 1024 / 16 = 51.2
+                    rounding_mode="floor",
+                ).to(torch.long)
+                self.custom_terrain_types = torch.sort(
+                    torch.arange(self.terrain.custom_env_id, self.cfg.terrain.num_cols, device=self.device)
+                    .repeat(self.num_envs // (self.cfg.terrain.num_cols - self.terrain.custom_env_id)), 
+                    descending=False
+                    ).values
+            else:
+                self.terrain_types = torch.div(
+                    torch.arange(self.num_envs, device=self.device),    # 0, 1, 2, ..., 1023
+                    (self.num_envs / self.cfg.terrain.num_cols),    # 1024 / 20 = 51.2
+                    rounding_mode="floor",
+                ).to(torch.long)    # 0, 0, 0, ..., 0, 1, 1, 1, ..., 2, 2, 2, ..., 19, 19, 19, each 51 * 20
+            # print(f"torch arange: {torch.arange(self.num_envs, device=self.device)}")
+            # print(f"num_envs / num_cols: {self.num_envs / self.cfg.terrain.num_cols}")
+            # print(f"terrain types: {self.terrain_types}, shape: {self.terrain_types.shape}")
+            # print(f"custom terrain types: {self.custom_terrain_types}, shape: {self.custom_terrain_types.shape}")
+            self.max_terrain_level = self.cfg.terrain.num_rows  # 10
             self.terrain_origins = (
                 torch.from_numpy(self.terrain.env_origins)
                 .to(self.device)
                 .to(torch.float)
-            )
+            )   # 10 x 20 x 3, row x col x xyz
+
             self.env_origins[:] = self.terrain_origins[
                 self.terrain_levels, self.terrain_types
             ]
@@ -1203,6 +1267,13 @@ class LeggedRobot(BaseTask):
         self.dt = self.cfg.control.decimation * self.sim_params.dt
         self.obs_scales = self.cfg.normalization.obs_scales
         self.reward_scales = class_to_dict(self.cfg.rewards.scales)
+
+        if self.cfg.rewards.curriculum:
+            self.reward_feet_step_scale_min = self.reward_scales["feet_step"]
+            self.reward_feet_step_scale = 0.0
+            self.reward_feet_stumble_scale_min = self.reward_scales["feet_stumble"]
+            self.reward_feet_stumble_scale = 0.0
+
         self.eval_scales = class_to_dict(self.cfg.evals)
         self.command_ranges = class_to_dict(self.cfg.commands.ranges)
         if self.cfg.terrain.mesh_type not in ["heightfield", "trimesh"]:

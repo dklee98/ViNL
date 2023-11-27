@@ -86,6 +86,7 @@ class LeggedRobotCfg(BaseConfig):
         num_cols = 20  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete, custom_obs]
         terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2, 0.0]
+        final_boss_custom = False
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
@@ -96,7 +97,7 @@ class LeggedRobotCfg(BaseConfig):
         max_curriculum = 1.0
         num_commands = 4  # default: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
         resampling_time = 10.0  # time before command are changed[s]
-        heading_command = False  # if true: compute ang vel command from heading error
+        heading_command = True  # if true: compute ang vel command from heading error
 
         class ranges:
             lin_vel_x = [-1.0, 1.0]  # min max [m/s]
@@ -159,11 +160,11 @@ class LeggedRobotCfg(BaseConfig):
             tracking_ang_vel = 0.5
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = -0.0
+            orientation = -4e-1
             torques = -0.00001
-            dof_vel = -0.0
+            dof_vel = -1e-5
             dof_acc = -2.5e-7
-            base_height = -0.0
+            base_height = -1.0
             feet_air_time = 1.0
             feet_obs_contact = 0.0
             feet_step = -0.0
@@ -171,8 +172,9 @@ class LeggedRobotCfg(BaseConfig):
             feet_stumble = -0.0
             feet_step = -0.0
             action_rate = -0.01
-            stand_still = -0.0
+            stand_still = -2e-7
 
+        curriculum = False
         only_positive_rewards = True  # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25  # tracking reward = exp(-error^2/sigma)
         soft_dof_pos_limit = (
@@ -180,7 +182,7 @@ class LeggedRobotCfg(BaseConfig):
         )
         soft_dof_vel_limit = 1.0
         soft_torque_limit = 1.0
-        base_height_target = 1.0
+        base_height_target = 0.4
         max_contact_force = 100.0  # forces above this value are penalized
 
     class evals:

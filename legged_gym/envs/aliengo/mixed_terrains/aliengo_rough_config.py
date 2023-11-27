@@ -81,16 +81,19 @@ class AliengoRoughCfg(LeggedRobotCfg):
         # PD Drive parameters:
         control_type = "P"
         # stiffness = {'joint': 20.}  # [N*m/rad]
-        stiffness = {"joint": 40.0}  # [N*m/rad]
+        stiffness = {"joint": 25.0}  # [N*m/rad] # go1
+        # stiffness = {"joint": 40.0}  # [N*m/rad] # aliengo
         # damping = {'joint': 0.5}     # [N*m*s/rad]
-        damping = {"joint": 2.0}  # [N*m*s/rad]
+        damping = {"joint": 0.7}  # [N*m*s/rad] go1
+        # damping = {"joint": 2.0}  # [N*m*s/rad] aliengo
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/urdf/aliengo.urdf"
+        file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/go1/urdf/go1.urdf"
+        # file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/urdf/aliengo.urdf"
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
         terminate_after_contacts_on = ["base", "trunk", "hip"]
@@ -126,7 +129,11 @@ class AliengoRoughCfgPPO(LeggedRobotCfgPPO):
         load_run = -1
         # resume_path = "weights/ny_rough_aliengo_Sep06_11-46-01_RoughTerrainDMEnc_model_1500.pt"
         
+        resume=True
         # resume_path = "rough.pt" # rough.pt is the trained rough terrain policy.  Keep this line if you want to eval this policy via play.py.  Comment this line if you wish to train a rough terrain policy from scratch
-        resume_path = "logs/rough_aliengo/Oct04_22-22-01_RoughTerrainDMEnc/model_4500_13.634485518597067.pt"
+        # resume_path = "logs/rough_aliengo/Nov26_20-19-53_RoughTerrainDMEnc/model_2100_7.561580716893077.pt"
+        # resume_path = "logs/rough_aliengo/Nov26_21-31-31_RoughTerrainDMEnc/model_4500_10.35738783121109.pt"
+        resume_path = "logs/rough_aliengo/Nov27_11-25-21_RoughTerrainDMEnc/model_4500_13.398519083857536.pt"
+        # resume_path = "logs/rough_aliengo/Oct04_22-22-01_RoughTerrainDMEnc_reference/model_4500_13.634485518597067.pt"
         max_iterations = 4500
 

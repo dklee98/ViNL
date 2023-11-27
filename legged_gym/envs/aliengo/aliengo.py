@@ -46,8 +46,11 @@ class AlienGoCameraMixin:
     def init_aux_cameras(self, follow_cam=False, float_cam=False):
         if follow_cam:
             self.follow_cam, follow_trans = self.make_handle_trans(
-                1920, 1080, 0, (1.0, -1.0, 0.0), (0.0, 0.0, 3 * 3.14 / 4)
+                1920, 1080, 0, (1.0, -1.0, 0.0), (0.0, 0.785398, 3 * 3.14 / 4)
             )
+            # self.follow_cam, follow_trans = self.make_handle_trans(
+            #     1920, 1080, 0, (1.0, -1.0, 0.0), (0.0, 0.0, 3 * 3.14 / 4)
+            # )
             body_handle = self.gym.find_actor_rigid_body_handle(
                 self.envs[0], self.actor_handles[0], "base"
             )

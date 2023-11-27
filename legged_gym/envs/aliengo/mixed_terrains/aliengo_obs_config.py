@@ -57,8 +57,8 @@ class AliengoObsCfg(LeggedRobotCfg):
         float_cam=False
 
     class terrain(LeggedRobotCfg.terrain):
-        # terrain_proportions = [0.1, 0.1, 0.2, 0.2, 0.2, 0.2]
-        terrain_proportions = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        terrain_proportions = [0.1, 0.1, 0.2, 0.2, 0.2, 0.2]
+        # terrain_proportions = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
         border = 50
         mesh_type = "trimesh"
 
@@ -84,16 +84,19 @@ class AliengoObsCfg(LeggedRobotCfg):
         # PD Drive parameters:
         control_type = "P"
         # stiffness = {'joint': 20.}  # [N*m/rad]
-        stiffness = {"joint": 40.0}  # [N*m/rad]
+        stiffness = {"joint": 25.0}  # [N*m/rad] # go1
+        # stiffness = {"joint": 40.0}  # [N*m/rad] # aliengo
         # damping = {'joint': 0.5}     # [N*m*s/rad]
-        damping = {"joint": 2.0}  # [N*m*s/rad]
+        damping = {"joint": 0.7}  # [N*m*s/rad] go1
+        # damping = {"joint": 2.0}  # [N*m*s/rad] aliengo
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/urdf/aliengo.urdf"
+        file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/go1/urdf/go1.urdf"
+        # file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/urdf/aliengo.urdf"
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
         terminate_after_contacts_on = ["base", "trunk", "hip"]
@@ -145,7 +148,7 @@ class AliengoObsCfgPPO(LeggedRobotCfgPPO):
         num_test_envs=1
 
         resume = True
-        # resume_path = "logs/rough_aliengo/Oct04_22-22-01_RoughTerrainDMEnc/model_4200_14.453762291669845.pt" # for training
-        resume_path = "logs/obs_aliengo/Oct05_13-05-54_ObsEncDM/model_1000_18.893275952339174.pt" # for eval
+        resume_path = "logs/rough_aliengo/Nov27_11-25-21_RoughTerrainDMEnc/model_4500_13.398519083857536.pt" # for training
+        # resume_path = "logs/obs_aliengo/Oct05_13-05-54_ObsEncDM_reference/model_1000_18.893275952339174.pt" # for eval
         # resume_path = "weights/rough.pt" # if you want to train
-        # resume_path = "weights/obs.pt" #if you want to eval
+        resume_path = "logs/obs_aliengo/Nov27_12-37-31_ObsEncDM/model_10500_17.82906129360199.pt"
