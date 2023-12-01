@@ -40,12 +40,12 @@ from datetime import datetime
 from legged_gym.envs import *
 from legged_gym.utils import Logger, export_policy_as_jit, get_args, task_registry
 
-STRAIGHT = 0
-RIGHT_TURN = 1
-LEFT_TURN = 2
-WAVE = 3
-LEFT_RIGHT = 4
-RIGHT_LEFT = 5
+# STRAIGHT = 0
+# RIGHT_TURN = 1
+# LEFT_TURN = 2
+# WAVE = 3
+# LEFT_RIGHT = 4
+# RIGHT_LEFT = 5
 
 def manual_save_im(env, path):
     env.gym.start_access_image_tensors(env.sim)
@@ -77,7 +77,7 @@ class ViNLController:
         self.lin_x = 0.5
         self.ang_z = 0.3
 
-        self.episode_type = WAVE
+        # self.episode_type = WAVE
 
         """ 2023-10-30: Seunghyun modify """
         self.collision_count = 0
@@ -128,7 +128,7 @@ class ViNLController:
             del loaded_dict
 
         # override some parameters for testing
-        env_cfg.env.num_envs = 1 # min(train_cfg.runner.num_test_envs, 50)
+        env_cfg.env.num_envs = 100 # min(train_cfg.runner.num_test_envs, 50)
         env_cfg.terrain.terrain_length = 10.0 # default 8, segfaults at 10
         env_cfg.terrain.terrain_width = 10.0 # default 8, segfaults at 10
         env_cfg.terrain.num_rows = 10
@@ -185,21 +185,21 @@ class ViNLController:
         ###################################
         # cmd vel 생성하는 부분
         # 총 개수는 10 * episode_length
-        self.episode_size = int(env.max_episode_length)
-        self.generate_cmd_vel()
+        # self.episode_size = int(env.max_episode_length)
+        # self.generate_cmd_vel()
         ###################################
 
         for i in range(1 * int(env.max_episode_length + 2)):
-            robot_pos = env.root_states[0][:3]
-            camera_pos = [robot_pos[0], robot_pos[1] + 3, robot_pos[2] + 1]
-            env.set_camera(camera_pos, robot_pos)
+            # robot_pos = env.root_states[0][:3]
+            # camera_pos = [robot_pos[0], robot_pos[1] + 3, robot_pos[2] + 1]
+            # env.set_camera(camera_pos, robot_pos)
 
             if train_cfg.runner.eval_baseline:
                 actions = train_cfg.runner.baseline_policy(obs)
             else:
-                env.commands[:,0] = self.lin_speed[i % self.episode_size]
-                env.commands[:,1] = 0.0 # self.lin_speed[1]
-                env.commands[:,2] = self.ang_speed[i % self.episode_size]
+                # env.commands[:,0] = self.lin_speed[i % self.episode_size]
+                # env.commands[:,1] = 0.0 # self.lin_speed[1]
+                # env.commands[:,2] = self.ang_speed[i % self.episode_size]
                 actions = policy(obs)
 
             """ 2023-10-30: Seunghyun modify """
@@ -283,44 +283,44 @@ class ViNLController:
                 self.traveled_distance = 0
                 self.collision_count = 0
 
-    def generate_cmd_vel(self):
-        # print("episode size: ", self.episode_size)
-        if self.episode_type == STRAIGHT:
-            for i in range(self.episode_size):
-                self.lin_speed.append(self.lin_x)
-                self.ang_speed.append(0.0)
-        elif self.episode_type == RIGHT_TURN:
-            for i in range(self.episode_size):
-                self.lin_speed.append(self.lin_x)
-                self.ang_speed.append(-self.ang_z)
-        elif self.episode_type == LEFT_TURN:
-            for i in range(self.episode_size):
-                self.lin_speed.append(self.lin_x)
-                self.ang_speed.append(self.ang_z)
-        elif self.episode_type == WAVE:
-            for i in range(self.episode_size):
-                if i < self.episode_size // 2:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(self.ang_z)
-                else:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(-self.ang_z)
-        elif self.episode_type == LEFT_RIGHT:
-            for i in range(self.episode_size):
-                if i < self.episode_size / 2:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(-self.ang_z)
-                else:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(self.ang_z)       
-        elif self.episode_type == RIGHT_LEFT:
-            for i in range(self.episode_size):
-                if i < self.episode_size / 2:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(self.ang_z)
-                else:
-                    self.lin_speed.append(self.lin_x)
-                    self.ang_speed.append(-self.ang_z)
+    # def generate_cmd_vel(self):
+    #     # print("episode size: ", self.episode_size)
+    #     if self.episode_type == STRAIGHT:
+    #         for i in range(self.episode_size):
+    #             self.lin_speed.append(self.lin_x)
+    #             self.ang_speed.append(0.0)
+    #     elif self.episode_type == RIGHT_TURN:
+    #         for i in range(self.episode_size):
+    #             self.lin_speed.append(self.lin_x)
+    #             self.ang_speed.append(-self.ang_z)
+    #     elif self.episode_type == LEFT_TURN:
+    #         for i in range(self.episode_size):
+    #             self.lin_speed.append(self.lin_x)
+    #             self.ang_speed.append(self.ang_z)
+    #     elif self.episode_type == WAVE:
+    #         for i in range(self.episode_size):
+    #             if i < self.episode_size // 2:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(self.ang_z)
+    #             else:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(-self.ang_z)
+    #     elif self.episode_type == LEFT_RIGHT:
+    #         for i in range(self.episode_size):
+    #             if i < self.episode_size / 2:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(-self.ang_z)
+    #             else:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(self.ang_z)       
+    #     elif self.episode_type == RIGHT_LEFT:
+    #         for i in range(self.episode_size):
+    #             if i < self.episode_size / 2:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(self.ang_z)
+    #             else:
+    #                 self.lin_speed.append(self.lin_x)
+    #                 self.ang_speed.append(-self.ang_z)
 
 
 if __name__ == "__main__":
